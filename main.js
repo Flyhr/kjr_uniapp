@@ -3,6 +3,8 @@ import App from './App'
 import store from './store' // store
 import plugins from './plugins' // plugins
 import './permission' // permission
+// import UniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
+
 Vue.use(plugins)
 
 Vue.config.productionTip = false
@@ -15,3 +17,8 @@ const app = new Vue({
 })
 
 app.$mount()
+// export default {
+//   components: {
+//     UniPopup,
+//   },
+// };

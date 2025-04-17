@@ -70,6 +70,13 @@
     "style": {
       "navigationBarTitleText": "浏览文本"
     }
+  },
+  {
+  	"path" : "components/CustomModal/CustomModal",
+  	"style" : 
+  	{
+  		"navigationBarTitleText" : ""
+  	}
   }],
   "tabBar": {
     "color": "#000000",
