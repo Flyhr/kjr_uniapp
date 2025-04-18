@@ -1,6 +1,4 @@
-<p align="center">
-	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-43e3941654fa3054c9684bf53d1b1d356a1.png">
-</p>
+
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">RuoYi v1.2.0</h1>
 <h4 align="center">KJR移动APP</h4>
 <p align="center">
@@ -16,19 +14,7 @@
 * 配套后端代码仓库地址[RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) 或 [RuoYi-Cloud](https://github.com/yangzongzhuan/RuoYi-Cloud) 版本。
 * 应用框架基于[uniapp](https://uniapp.dcloud.net.cn/)，支持小程序、H5、Android和IOS。
 * 前端组件采用[uni-ui](https://github.com/dcloudio/uni-ui)，全端兼容的高性能UI框架。
-* 阿里云折扣场：[点我进入](http://aly.ruoyi.vip)，腾讯云秒杀场：[点我进入](http://txy.ruoyi.vip)&nbsp;&nbsp;
 
-
-## 技术文档
-
-- 官网网站：[http://ruoyi.vip](http://ruoyi.vip)
-- 文档地址：[http://doc.ruoyi.vip](http://doc.ruoyi.vip)
-- H5页体验：[http://h5.ruoyi.vip](http://h5.ruoyi.vip)
-- QQ交流群： ①133713780(满)、②146013835(满)、③189091635
-- 小程序体验
-
-<img src="https://oscimg.oschina.net/oscnet/up-26c76dc90b92acdbd9ac8cd5252f07c8ad9.jpg" alt="小程序演示"/>
- 
 
 ## 演示图
 
