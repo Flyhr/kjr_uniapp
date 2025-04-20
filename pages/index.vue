@@ -1,17 +1,17 @@
 <template>
   <view class="index-container">
     <!-- 顶部信息栏 -->
-    <view class="top-info">
-      <text>温度：{{ temperature }}</text>
-      <text>屈膝度：{{ flexionDegree }}</text>
-      <text>当天总步数：{{ totalSteps }}</text>
-    </view>
+        <view class="top-info">
+          <text v-if="healthData && healthData.data">温度：{{ healthData.data.temperature }}</text>
+          <text v-if="healthData && healthData.data">屈膝度：{{ healthData.data.knee }}</text>
+          <text v-if="healthData && healthData.data">当天总步数：{{ healthData.data.walk }}</text>
+        </view>
     <!-- 圆形测试按钮 -->
     <button @click="showUserInfoPopup" class="test-button">测试</button>
     
     <!-- 使用自定义弹窗组件 -->
     <custom-modal :visible="showUserInfo" @close="cancelPopup">
-		<view class="info-title">确认信息</view>
+      <view class="info-title">确认信息</view>
       <view class="popup-content">
         <view class="info-item">
           <text>姓名：</text>
@@ -72,7 +72,8 @@
 </template>
 
 <script>
-import CustomModal from '@/components/CustomModal/CustomModal.vue';  // 注意路径是否正确
+import CustomModal from '@/components/CustomModal/CustomModal.vue';
+import { getLatestHealthData } from '@/api/healthData'
 
 export default {
   components: {
@@ -80,9 +81,12 @@ export default {
   },
   data() {
     return {
-      temperature: '36.5℃',
-      flexionDegree: '90°',
-      totalSteps: '5000',
+      // 健康数据初始值
+      healthData: {
+        temperature: null,
+        knee: null,
+        walk: null
+      },
       showUserInfo: false,
       userInfo: {
         name: '',
@@ -97,8 +101,12 @@ export default {
         isSwelling: '',
         painLevel: '',
         symptomDescription: ''
-      }
+      },
+      user_id: 2 // 假设用户 ID 为 1，实际使用时需要动态获取
     };
+  },
+  onLoad() {
+    this.fetchLatestHealthData();
   },
   methods: {
     showUserInfoPopup() {
@@ -112,6 +120,18 @@ export default {
     confirmPopup() {
       console.log("用户信息已确认：", this.userInfo);
       this.showUserInfo = false;
+    },
+    fetchLatestHealthData() {
+      getLatestHealthData(this.user_id)
+        .then(data => {
+          this.healthData = data
+		console.log("完整的健康数据:", this.healthData); // 打印完整的健康数据对象
+
+		  console.log("健康数据"+this.healthData.data.knee);
+        })
+        .catch(error => {
+          console.error('获取健康数据失败：', error)
+        })
     }
   }
 };

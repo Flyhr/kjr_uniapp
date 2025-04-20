@@ -12,7 +12,7 @@
   }, {
     "path": "pages/index",
     "style": {
-      "navigationBarTitleText": "若依移动端框架",
+      "navigationBarTitleText": "KJR移动APP",
       "navigationStyle": "custom"
     }
   }, {
@@ -125,7 +125,7 @@
   },
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "RuoYi",
+    "navigationBarTitleText": "KJR",
     "navigationBarBackgroundColor": "#FFFFFF"
   }
 }
