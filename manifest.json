@@ -1,5 +1,5 @@
 {
-    "name" : "若依移动端",
+    "name" : "康复诊疗移动端",
     "appid" : "__UNI__25A9D80",
     "description" : "",
     "versionName" : "1.2.0",
@@ -37,6 +37,13 @@
             },
             "ios" : {},
             "sdkConfigs" : {}
+        },
+        "android" : {
+            "manifest" : {
+                "application" : {
+                    "android:usesCleartextTraffic" : "true"
+                }
+            }
         }
     },
     "quickapp" : {},
@@ -60,10 +67,12 @@
             "port" : 9090,
             "https" : false
         },
-        "title" : "RuoYi-App",
+        "title" : "康复诊疗",
         "router" : {
             "mode" : "hash",
             "base" : "./"
         }
-    }
+    },
+    "locale" : "zh-Hans",
+    "fallbackLocale" : "zh-Hans"
 }

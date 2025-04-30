@@ -3,7 +3,7 @@
     <view class="logo-content align-center justify-center flex">
       <image style="width: 100rpx;height: 100rpx;" :src="globalConfig.appInfo.logo" mode="widthFix">
       </image>
-      <text class="title">KJR移动端登录</text>
+      <text class="title">膝关节康复诊疗</text>
     </view>
     <view class="login-form-content">
       <view class="input-item flex align-center">
@@ -109,13 +109,27 @@
           }
         })
       },
-      // 登录成功后，处理函数
-      loginSuccess(result) {
-        // 设置用户信息
-        this.$store.dispatch('GetInfo').then(res => {
-          this.$tab.reLaunch('/pages/index')
+// 登录成功后，处理函数
+loginSuccess(result) {
+    // 设置用户信息
+    this.$store.dispatch('GetInfo')
+      .then(res => {
+            // 检查 res.user 是否存在
+            if (res && res.user) {
+                const userId = res.user.userId;
+                // 存储用户 ID 到本地
+				  uni.setStorageSync('userId', userId);
+                // const id= uni.getStorageSync("userId");
+				// console.log("444444444",id);
+                this.$tab.reLaunch('/pages/index');
+            } else {
+                console.error('未获取到有效的用户信息');
+            }
         })
-      }
+      .catch(error => {
+            console.error('获取用户信息失败:', error);
+        });
+}
     }
   }
 </script>
