@@ -11,6 +11,7 @@
         <uni-forms-item label="邮箱" name="email">
           <uni-easyinput v-model="user.email" placeholder="请输入邮箱" />
         </uni-forms-item>
+   
         <uni-forms-item label="性别" name="sex" required>
           <uni-data-checkbox v-model="user.sex" :localdata="sexs" />
         </uni-forms-item>

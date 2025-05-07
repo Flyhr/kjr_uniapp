@@ -17,7 +17,7 @@
       <view class="input-item flex align-center" style="width: 60%;margin: 0px;" v-if="captchaEnabled">
         <view class="iconfont icon-code icon"></view>
         <input v-model="loginForm.code" type="number" class="input" placeholder="请输入验证码" maxlength="4" />
-        <view class="login-code"> 
+        <view class="login-code">
           <image :src="codeUrl" @click="getCode" class="login-code-img"></image>
         </view>
       </view>
@@ -34,7 +34,7 @@
         <text @click="handlePrivacy" class="text-blue">《隐私协议》</text>
       </view>
     </view>
-     
+
   </view>
 </template>
 
@@ -47,11 +47,11 @@
         codeUrl: "",
         captchaEnabled: true,
         // 用户注册开关
-        register: true,
+        register: false,
         globalConfig: getApp().globalData.config,
         loginForm: {
-          username: "admin",
-          password: "admin123",
+          username: "qwer",
+          password: "123456",
           code: "",
           uuid: ""
         }
@@ -116,12 +116,13 @@ loginSuccess(result) {
       .then(res => {
             // 检查 res.user 是否存在
             if (res && res.user) {
-                const userId = res.user.userId;
-                // 存储用户 ID 到本地
-				  uni.setStorageSync('userId', userId);
-                // const id= uni.getStorageSync("userId");
+                // const userId = res.user.userId;
+				console.log(res);
+				uni.setStorageSync('userInfo', res);					
+    //             const id= uni.getStorageSync("userInfo").roles[0].roleId;
 				// console.log("444444444",id);
-                this.$tab.reLaunch('/pages/index');
+				this.$tab.reLaunch('/pages/index');
+				
             } else {
                 console.error('未获取到有效的用户信息');
             }
@@ -189,20 +190,20 @@ loginSuccess(result) {
         margin-top: 40px;
         height: 45px;
       }
-      
+
       .reg {
         margin-top: 15px;
       }
-      
+
       .xieyi {
         color: #333;
         margin-top: 20px;
       }
-      
+
       .login-code {
         height: 38px;
         float: right;
-      
+
         .login-code-img {
           height: 38px;
           position: absolute;
