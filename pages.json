@@ -16,16 +16,16 @@
       "navigationStyle": "custom"
     }
   }, 
- {
-    "path": "pages/chat/chat",
-    "style": {
-      "navigationBarTitleText": "聊天"
-    }
-  },
+ // {
+ //    "path": "pages/chat/chat",
+ //    "style": {
+ //      "navigationBarTitleText": "聊天"
+ //    }
+ //  },
 		{
     "path": "pages/work/test",
     "style": {
-      "navigationBarTitleText": "工作台"
+      "navigationBarTitleText": "预测"
     }
   },
 
@@ -98,16 +98,17 @@
         "selectedIconPath": "static/images/tabbar/home_.png",
         "text": "首页"
       },
+	  // {
+	  //   "pagePath": "pages/chat/chat",
+	  //   "iconPath": "/static/images/tabbar/chat.png",
+	  //   "selectedIconPath": "/static/images/tabbar/chat_.png",
+	  //   "text": "聊天"
+	  // },
 	  {
-	    "pagePath": "pages/chat/chat",
-	    "iconPath": "/static/images/tabbar/chat.png",
-	    "selectedIconPath": "/static/images/tabbar/chat_.png",
-	    "text": "聊天"
-	  },{
         "pagePath": "pages/work/test",
         "iconPath": "static/images/tabbar/work.png",
         "selectedIconPath": "static/images/tabbar/work_.png",
-        "text": "工作台"
+        "text": "预测"
       }, {
         "pagePath": "pages/mine/index",
         "iconPath": "static/images/tabbar/mine.png",

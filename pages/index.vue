@@ -1,7 +1,56 @@
 <template>
 	
 <view v-if="user_roleId ===3">
-	<text>欢迎，医生！这里是医生专属内容。</text>
+	<uni-section title="医生" type="line" class="title_kjr"></uni-section>
+	
+	<uni-grid :column="3" :showBorder="false" class="button_margin_top">
+	<uni-grid-item >
+	 <view class="test-container">
+	   <button @click="openAddPatientModal_is_add" class="test-button">添加患者信息</button>
+	</view>
+	</uni-grid-item>
+	<!-- <uni-grid-item>
+	<view class="test-container">
+	   <button @click="fetchSensorData" class="test-button">删除患者信息</button>
+	</view>
+	</uni-grid-item>
+	<uni-grid-item>
+	<view class="test-container">
+	   <button @click="saveHealthDataToServer" class="test-button">修改患者信息</button>
+	</view>
+	</uni-grid-item> -->
+	<uni-grid-item>
+	<view class="test-container">
+	   <button @click="openAddPatientModal" class="test-button">查询患者信息</button>
+	</view>
+	</uni-grid-item>
+	 </uni-grid>
+<!-- 弹窗部分 -->
+  <view v-if="showModal" class="modal-overlay">
+    <view class="modal-content">
+      <view class="modal-header" v-if="this.is_add === true">添加患者信息</view>
+      <view class="modal-header" v-else>查询患者信息</view>
+      <view class="modal-body">
+        <input
+          type="text"
+          v-model="patientName"
+          placeholder="请输入姓名"
+          class="modal-input"
+        />
+        <input
+          type="text"
+          v-model="patientPhone"
+          placeholder="请输入电话"
+          class="modal-input"
+        />
+      </view>
+      <view class="modal-footer">
+		  <button @click="closeModal" class="modal-button cancel">取消</button>
+		  
+        <button @click="confirmAddPatient" class="modal-button confirm">确定</button>
+      </view>
+    </view>	 
+  </view>
   </view>
   <view v-else>
 	   <uni-section title="设备数据" type="line" class="title_kjr"></uni-section>
@@ -30,39 +79,31 @@
 	       <button @click="saveHealthDataToServer" class="test-button">存储数据</button>
 	   	</view>
 	   	</uni-grid-item>
-<!-- 		<uni-grid-item>
-	   	<view class="test-container">
-	       <button @click="userInfoForecase" class="test-button">用户信息</button>
-	   	</view>
-	   	</uni-grid-item> -->
 	     </uni-grid>
-	     <!-- 自定义弹窗组件 -->
-	 <!--    <UserInfoModal
-	       :visible="showUserInfo"
-	       :userInfo="userInfo"
-	       @close="cancelPopup"
-	       @confirm="confirmPopup"
-	     />-->
+
 	   </view> 
   </view> 
 </template>
 
 <script>
 import CustomModal from '@/components/CustomModal/CustomModal.vue';
-import { getLatestHealthData, saveHealthData,getUserInfoFromTableApi } from '@/api/healthData';
-import bluetooth from '@/utils/bluetooth.js';
+// import { getLatestHealthData, saveHealthData,getUserInfoFromTableApi } from '@/api/healthData';
 import wifiGetData from '@/utils/wifi.js';
-// import UserInfoModal from './modal/UserInfoModal.vue';
+import {deviceManagement} from "@/utils/prediction.js"
 import { formatDate } from  "@/utils/date.js";
+import { selectPat,getLatestHealthData,saveHealthData,deleteHealthData,getDoctorData,getPatientData,getUserInfoFromTableApi ,saveUserInfoFromTableApi,predictHealthRecovery,addPatientRelationleApi } from '@/api/healthData.js';
 
 
 export default {
   components: {
     CustomModal,
-    // UserInfoModal
   },
   data() {
     return {
+		// 弹窗相关数据
+		      showModal: false,       // 控制弹窗显示与隐藏
+		      patientName: '',        // 患者姓名输入框绑定数据
+		      patientPhone: ''  ,      // 患者电话输入框绑定数据
       showUserInfo: false,
       healthData: {
         userId: uni.getStorageSync("userId"),
@@ -88,6 +129,7 @@ export default {
         painLevel: '',
         symptomDescription: ''
       },
+	  is_add:false,
       user_id: uni.getStorageSync("userInfo").user.userId,
 	  user_roleId : uni.getStorageSync("userInfo").user.roles[0].roleId,   
 	   // 用于存储从 integrated_data_table 表获取的信息
@@ -95,16 +137,109 @@ export default {
     };
   },
   onLoad() {
+	  
 	    this.initData();
   },
   methods: {
+	  // 打开弹窗（添加患者信息）
+	  openAddPatientModal_is_add() {
+	    this.showModal = true;
+	    this.is_add = true
+	  },
+    // 打开弹窗（查询患者信息）
+    openAddPatientModal() {
+      this.showModal = true;
+	  this.is_add = false
+	  
+    },
+
+    // 关闭弹窗
+    closeModal() {
+      this.showModal = false;
+      // 如果需要，可以在关闭时清空输入框的数据
+      this.patientName = '';
+      this.patientPhone = '';
+    },
+    // 点击“确定”按钮后执行的方法
+    confirmAddPatient() {
+      console.log("患者姓名:", this.patientName);
+      console.log("患者电话:", this.patientPhone);
+	var patInfo={
+				Name : this.patientName,
+				Phone : this.patientPhone
+			};
+      this.selectPatient(patInfo);
+      // 关闭弹窗
+      this.closeModal();
+    },
 	    initData() {
 	        if (this.user_roleId === 4) {
 	          this.timer = setInterval(() => {
 	            this.fetchSensorData();
-	          }, 5000);
+	          }, 20000);
 	        }
 	      },
+ //医生：根据姓名和手机号查询患者是否有账号
+
+async selectPatient(data) {
+  selectPat(data.Name, data.Phone)
+    .then(res => {
+      console.log("查询结果", res.data);
+      const relation = {
+        docId: this.user_id,
+        patId: res.data.userId
+      };
+      if (this.is_add) {
+        addPatientRelationleApi(relation);
+      } else {
+        // 根据返回的性别进行映射
+        const gender = res.data.sex === "0" 
+          ? "男" 
+          : res.data.sex === "1" 
+            ? "女" 
+            : "未知";
+        // 对状态做简单转换，假设 "0" 为正常，其他为异常
+        const status = res.data.status === "0" ? "正常" : "异常";
+
+        // 拼接弹窗内容信息
+        const contentText = 
+          "姓名：" + res.data.userName + "\n" +
+          "昵称：" + res.data.nickName + "\n" +
+          "手机号：" + res.data.phonenumber + "\n" +
+          "性别：" + gender + "\n" +
+		  "邮箱：" + res.data.email + "\n" +
+          "账号状态：" + status + "\n" +
+          "备注：" + res.data.remark;
+
+        // 弹窗显示用户信息
+        uni.showModal({
+          title: "用户信息",
+          content: contentText,
+          showCancel: false
+        });
+      }
+    })
+    .catch(error => {
+      uni.showToast({ title: '找不到该用户', icon: 'none' });
+      this.showModal = true;
+    });
+},
+
+
+	//添加自己的患者
+	async addPatientRelationle(data){
+		
+		addPatientRelationleApi(data)
+		    .then(res => {
+		      console.log('返回数据：', res.data);
+			  uni.showToast({ title: '添加病人成功', icon: 'none' });
+			  
+		    })
+		    .catch(error => {
+			uni.showToast({ title: '找不到该用户', icon: 'none' });
+			this.showModal = true;
+		    });
+	},
     // 获取传感器测量数据
     fetchSensorData() {
       uni.request({
@@ -112,7 +247,6 @@ export default {
         method: 'GET',
         success: (res) => {
           this.healthData = res.data;
-		  
         },
         fail: (error) => {
           console.error('获取传感器数据时出现错误：', error);
@@ -158,98 +292,11 @@ export default {
           uni.showToast({ title: '数据保存失败', icon: 'none' });
         });
     },
-    // showUserInfoPopup() {
-    //   console.log("测试按钮被点击，弹窗显示");
-    //   this.showUserInfo = true;
-    // },
-	//传感器设备信息
-	
+
+	//传感器设备信息	
  SensorInfo() {
       // 从本地存储中获取用户信息和设备信息
-      const userInfo = uni.getStorageSync('userInfo');
-      const deviceInfo = userInfo.devices;
- 
-      // 判断是否存在设备信息
-      if (!deviceInfo || Object.keys(deviceInfo).length === 0) {
-        uni.showModal({
-          title: '设备信息',
-          content: '当前没有连接的设备',
-          showCancel: false,
-          confirmText: '确定'
-        });
-        return;
-      }
- 
-      // 定义需要展示的字段与对应的中文名称
-      const fieldsMapping = {
-        deviceName: '设备名称',
-        deviceMac: '设备MAC',
-        knee: '膝盖角度',
-        temperature: '温度',
-        walk: '步行状态',
-        speed: '速度',
-        distance: '距离',
-        remark: '备注',
-        updateTime: '更新时间'
-      };
- 
-      // 构建弹窗展示内容，格式化更新时间
-      let content = '';
-      for (const key in fieldsMapping) {
-        if (key === 'updateTime' && deviceInfo[key]) {
-          content += `${fieldsMapping[key]}：${formatDate(deviceInfo[key])}\n`;
-        } else if (key !== 'updateTime' && deviceInfo.hasOwnProperty(key)) {
-          content += `${fieldsMapping[key]}：${deviceInfo[key] != null ? deviceInfo[key] : ''}\n`;
-        }
-      }
- 
-      uni.showModal({
-        title: '设备信息',
-        content: content,
-        cancelText: '取消',
-        confirmText: '删除',
-        success: (res) => {
-          if (res.confirm) {
-            // 用户点击删除后，再次确认删除
-            uni.showModal({
-              title: '确认删除',
-              content: '是否确认删除设备信息？',
-              cancelText: '取消',
-              confirmText: '确定',
-              success: (resDel) => {
-                if (resDel.confirm) {
-                  // 调用 API 删除后端设备数据
-                  deleteHealthData(deviceInfo.userId)
-                    .then((resApi) => {
-                      // 假设后端返回的 code === 200 表示删除成功
-                      if (resApi && resApi.code === 200) {
-                        // 删除成功后，同时清除本地存储中的设备信息
-                        delete userInfo.devices;
-                        uni.setStorageSync('userInfo', userInfo);
-                        uni.showToast({
-                          title: '设备信息已删除',
-                          icon: 'success'
-                        });
-                      } else {
-                        uni.showToast({
-                          title: resApi.msg || '删除失败',
-                          icon: 'none'
-                        });
-                      }
-                    })
-                    .catch((err) => {
- 						  console.error('删除请求出错：', err);
-                      uni.showToast({
-                        title: '请求失败',
-                        icon: 'none'
-                      });
-                    });
-                }
-              }
-            });
-          }
-        }
-      });
+      deviceManagement();
     },
 	//获取数据库设备信息
     fetchLatestHealthData() {
@@ -270,6 +317,10 @@ export default {
 
 .title_kjr{
 	margin-top: 45px;
+}
+.button_margin_top{
+	margin-top: 30px;
+	
 }
 .top-info {
   width: 100%;
@@ -335,7 +386,77 @@ export default {
   padding: 0px;
   font-size: 15px;
 }
+/* 弹窗遮罩层 */
+.modal-overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+/* 弹窗主体 */
+.modal-content {
+  width: 80%;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 弹窗标题 */
+.modal-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* 弹窗内容 */
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+.modal-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 15px; /* 增加内边距 */
+  font-size: 18px;    /* 提升字体大小 */
+  height: 50px;       /* 显式设定高度 */
+  border: 1px solid #ccc;
+  border-radius: 6px; /* 稍微扩大圆角效果 */
+  margin-bottom: 20px;/* 增加下边距 */
+}
+
+/* 弹窗按钮区域 */
+.modal-footer {
+  display: flex;
+  justify-content: space-around;
+}
+.modal-button {
+  flex: 1;
+  margin: 0 5px;
+  padding: 10px 0;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.modal-button.confirm {
+  background-color: #007bff;
+  color: #fff;
+}
+.modal-button.cancel {
+  background-color: #ccc;
+  color: #333;
+}
 .button-group {
   display: flex;
   justify-content: space-around;

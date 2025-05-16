@@ -1,9 +1,9 @@
 <template>
   <view class="about-container">
     <view class="header-section text-center">
-      <image style="width: 150rpx;height: 150rpx;" src="/static/logo200.png" mode="widthFix">
+      <image style="width: 150rpx;height: 150rpx;" src="/static/logo.png" mode="widthFix">
       </image>
-      <uni-title type="h2" title="若依移动端"></uni-title>
+      <uni-title type="h2" title="康复诊疗移动端"></uni-title>
     </view>
 
     <view class="content-section">
@@ -17,7 +17,7 @@
         <view class="list-cell list-cell-arrow">
           <view class="menu-item-box">
             <view>官方邮箱</view>
-            <view class="text-right">ruoyi@xx.com</view>
+            <view class="text-right">happy@xx.com</view>
           </view>
         </view>
         <view class="list-cell list-cell-arrow">
@@ -30,7 +30,7 @@
           <view class="menu-item-box">
             <view>公司网站</view>
             <view class="text-right">
-              <uni-link :href="url" :text="url" showUnderLine="false"></uni-link>
+              <uni-link :href="this.url" :text="url" showUnderLine="false"></uni-link>
             </view>
           </view>
         </view>
@@ -38,7 +38,7 @@
     </view>
 
     <view class="copyright">
-      <view>Copyright &copy; 2025 ruoyi.vip All Rights Reserved.</view>
+      <view>Copyright &copy; 2025 GGbond天下第一帅气</view>
     </view>
   </view>
 </template>
@@ -47,7 +47,8 @@
   export default {
     data() {
       return {
-        url: getApp().globalData.config.appInfo.site_url,
+        // url: getApp().globalData.config.appInfo.site_url,
+        url: "http://47.97.76.102",
         version: getApp().globalData.config.appInfo.version
       }
     }

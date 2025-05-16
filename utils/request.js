@@ -33,7 +33,7 @@ const request = config => {
       }).then(response => {
         let [error, res] = response
         if (error) {
-          toast('后端接口连接异常')
+          toast('后端接口连接异常111111111')
           reject('后端接口连接异常')
           return
         }

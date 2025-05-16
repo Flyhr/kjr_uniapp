@@ -12,8 +12,8 @@
 </template>
 
 <script>
-	import {getUser} from "../../api/user/index.js"
-	import {getlist} from "../../api/friend/index.js"
+	import {getUser} from "@/api/user/index.js"
+	import {getlist} from "@/api/friend/index.js"
 	export default {
 		data() {
 			return {

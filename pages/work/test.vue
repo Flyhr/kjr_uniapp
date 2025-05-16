@@ -1,40 +1,58 @@
 <template>
   <view class="work-container">
     <uni-section title="诊疗预测" type="line"></uni-section>
-    <view class="grid-body">
-      <uni-grid :column="4" :showBorder="false">
+    <view v-if="user_roleId ===3" class="grid-body">
+		
+      <uni-grid :column="2" :showBorder="false">
         <uni-grid-item>
-          <view class="grid-item-box" @click="userInfoForecase">
+          <view class="grid-item-box" @click="DoctoruserInfoForecase">
             <uni-icons type="person-filled" size="30"></uni-icons>
-            <text class="text">用户信息</text>
+            <text class="text">患者基础信息</text>
           </view>
         </uni-grid-item> 
-        <uni-grid-item>
-          <view class="grid-item-box" @click="deviceManagement">
+        <!-- <uni-grid-item>
+          <view class="grid-item-box" @click="deviceManagementButton">
             <uni-icons type="settings-filled" size="30"></uni-icons>
-            <text class="text">设备管理</text>
+            <text class="text">患者设备管理</text>
           </view>
-        </uni-grid-item>
+        </uni-grid-item> -->
         <uni-grid-item>
-          <view class="grid-item-box">
-            <uni-icons type="staff-filled" size="30"></uni-icons>
-            <text class="text">角色管理</text>
-          </view>
-        </uni-grid-item>
-        <uni-grid-item>
-          <view class="grid-item-box" @click="predictRecovery">
+          <view class="grid-item-box" @click="DoctorpredictRecoveryButton">
             <uni-icons type="color" size="30"></uni-icons>
-            <text class="text">康复预测</text>
+            <text class="text">患者康复预测</text>
           </view>
         </uni-grid-item>
       </uni-grid>
+	  
     </view>
+	<view v-else class="grid-body">
+		<uni-grid :column="3" :showBorder="false">
+		  <uni-grid-item>
+		    <view class="grid-item-box" @click="userInfoForecase">
+		      <uni-icons type="person-filled" size="30"></uni-icons>
+		      <text class="text">用户信息</text>
+		    </view>
+		  </uni-grid-item> 
+		  <uni-grid-item>
+		    <view class="grid-item-box" @click="deviceManagementButton">
+		      <uni-icons type="settings-filled" size="30"></uni-icons>
+		      <text class="text">设备管理</text>
+		    </view>
+		  </uni-grid-item>
+		  <uni-grid-item>
+		    <view class="grid-item-box" @click="predictRecoveryButton">
+		      <uni-icons type="color" size="30"></uni-icons>
+		      <text class="text">康复预测</text>
+		    </view>
+		  </uni-grid-item>
+		</uni-grid>
+	</view>
     
     <!-- 用户信息弹窗 -->
  <view v-if="showUserModal" class="modal-overlay">
       <view class="modal">
         <view class="modal-header">
-          <text>用户信息</text>
+          <text>用户基础信息</text>
         </view>
         <view class="modal-body">
           <form @submit.prevent="saveUserInfo">
@@ -64,20 +82,29 @@
             </view>
           </form>
         </view>
-        <view class="modal-footer">
+        <view v-if ="user_roleId===4"class="modal-footer">
           <button @click="closeUserModal" class="btn cancel-btn">取消</button>
-          <button @click="saveUserInfo" class="btn confirm-btn">保存</button>
+          <button @click="saveUserInfoButton" class="btn confirm-btn">保存</button>
         </view>
+		<view v-else>
+			<button @click="closeUserModal" class="btn confirm-btn">确定</button>
+			
+		</view>
       </view>
     </view>
+	
   </view>
 </template>
 <script>
 import { formatDate } from  "@/utils/date.js";
-import { deleteHealthData,getUserInfoFromTableApi ,saveUserInfoFromTableApi,predictHealthRecovery } from '@/api/healthData.js';
+import { deleteHealthData,getUserInfoFromTableApi ,saveUserInfoFromTableApi,predictHealthRecovery,getPatientData } from '@/api/healthData.js';
+import { ppredictRecovery, saveUserInfo, deviceManagement } from '@/utils/prediction.js';
+
   export default {
     data() {
       return {
+		patientData:{},
+		  user_roleId : uni.getStorageSync("userInfo").user.roles[0].roleId,
 // 用于存放从后端获取的用户数据
       userInfo: {},
       // 编辑时使用的拷贝数据
@@ -121,198 +148,103 @@ import { deleteHealthData,getUserInfoFromTableApi ,saveUserInfoFromTableApi,pred
         swiperDotIndex: 0,
       }
     },
+	  
     methods: {
-    // 点击“用户信息”按钮，获取数据并显示弹窗
-    userInfoForecase() {
+	//医生：“用户基础信息”按钮，获取数据并显示弹窗
+async 	DoctoruserInfoForecase(show){
+		const userId = uni.getStorageSync("userInfo").user.userId;
+		return getPatientData(userId)
+		  .then(res => {
+		    const patient = res.data; 
+			if(show){
+				this.getBasicInfo(patient.userId,show);
+					return patient;
+			}else{
+				show = false;
+				this.getBasicInfo(patient.userId,show);
+					return patient;
+			}	
+		  })
+		  .catch(error => {
+		    console.error('获取用户信息失败：', error);
+		    uni.showToast({ title: '获取用户信息失败', icon: 'none' });
+		  });
+	},
+	//医生：“康复预测”按钮，
+async DoctorpredictRecoveryButton(){
+	var show = false;
+	const patInfo = await this.DoctoruserInfoForecase(show);
+	console.log("chaotenq",patInfo);
+	const is_doc = true;
+	this.predictRecoveryButton(patInfo.userId,is_doc);
+},
+
+    // 患者：“用户基础信息”按钮，获取数据并是否显示弹窗
+async    userInfoForecase() {
       const userId = uni.getStorageSync("userInfo").user.userId;
-      getUserInfoFromTableApi(userId)
-        .then(res => {
-          this.userInfo = res.data;
-          // 复制数据到 editableUserInfo，并确保 pain 为数字类型
-          this.editableUserInfo = { ...res.data };
-          this.editableUserInfo.pain = Number(res.data.pain);
-          this.showUserModal = true;
-        })
-        .catch(error => {
-          console.error('获取用户信息失败：', error);
-          uni.showToast({ title: '获取用户信息失败', icon: 'none' });
-        });
+	  const show = true;
+	  this.getBasicInfo(userId,show);
+      
     },
-    
+//获取传入id的基础信息
+ async getBasicInfo(userId ,show){
+	getUserInfoFromTableApi(userId)
+	  .then(res => {
+	    this.userInfo = res.data;
+	    this.editableUserInfo = res.data;
+			  // console.log("777777",this.editableUserInfo);
+	    this.editableUserInfo.pain = Number(res.data.pain);
+			  if(this.showUserModal!=true && show){
+				  this.showUserModal = true;
+
+			  }
+	  })
+	  .catch(error => {
+	    console.error('获取用户信息失败：', error);
+	    uni.showToast({ title: '获取用户信息失败', icon: 'none' });
+	  }); 
+ },   
     // 改变单选选项时触发，让 pain 的值始终为数字
     handlePainChange(e) {
       const newPain = Number(e.detail.value);
       this.editableUserInfo.pain = newPain;
     },
-// 新增方法：点击“康复预测”，调用后端模型进行预测
-predictRecovery() {
-  // 调用 predictHealthRecovery API，把 userId 传给后端
-  predictHealthRecovery(this.userId)
-    .then(res => {
-      console.log("预测接口返回数据：", res);
-      if (res && res.code === 200 && res.data && res.data.predictedPain != null) {
-        // 将返回的预测值转换成整型（确保类型一致）
-        const predictedPain = parseInt(res.data.predictedPain);
-		console.log("predictedPain：",predictedPain);
-        // 根据 Rehabilitation_status 映射预测等级描述
-        const option = this.Rehabilitation_status.find(item => item.value === predictedPain);
-        const description = option ? option.label : '未知';
-        uni.showModal({
-          title: '康复预测结果',
-          content: '预测结果：' + description,
-          showCancel: false
-        });
-      } else {
-        uni.showToast({ title: res && res.msg ? res.msg : '预测失败', icon: 'none' });
-      }
-    })
-    .catch(err => {
-      console.error('预测接口调用失败：', err);
-      uni.showToast({ title: '预测请求失败', icon: 'none' });
-    });
+// 患者：点击“康复预测”，调用后端模型进行预测
+predictRecoveryButton(userId,is_doc) {
+	if(!is_doc){
+    userId = uni.getStorageSync("userInfo").user.userId;
+	  }
+	  console.log(userId);
+	  const is_save = true;
+		ppredictRecovery(userId,this.Rehabilitation_status,is_save);
 },
    
-    // 保存用户信息到后端
-    saveUserInfo() {
-      console.log('保存用户信息:', this.editableUserInfo);
-      this.editableUserInfo.pain = Number(this.editableUserInfo.pain);
-      console.log("提交的用户信息:", this.editableUserInfo);
-      saveUserInfoFromTableApi(this.editableUserInfo)
-        .then((resApi) => {
-          if (resApi && resApi.code === 200) {
-            uni.showToast({
-              title: '保存成功',
-              icon: 'success'
-            });
-            // 保存成功后重新获取最新数据
-            getUserInfoFromTableApi(this.userId)
-              .then((res) => {
-                this.userInfo = res.data;
-                this.editableUserInfo = { ...res.data };
-                this.editableUserInfo.pain = Number(res.data.pain);
-                this.showUserModal = true;
-              })
-              .catch((error) => {
-                console.error('获取用户信息失败：', error);
-                uni.showToast({ title: '获取用户信息失败', icon: 'none' });
-              });
-          } else {
-            uni.showToast({
-              title: resApi.msg || '保存失败',
-              icon: 'none'
-            });
-          }
-        })
-        .catch((error) => {
-          console.error('保存用户信息失败：', error);
-          uni.showToast({ title: '保存用户信息失败', icon: 'none' });
-        });
-      this.showUserModal = false;
+    // 保存用户基本信息到后端
+    saveUserInfoButton() {
+		this.userInfoForecase();
+		if(this.editableUserInfo != null){
+			this.userInfo = saveUserInfo(this.editableUserInfo);
+		}else{
+			console.log("获取用户信息失败");
+			
+		}      
     },
     // 关闭弹窗
     closeUserModal() {
       this.showUserModal = false;
     },
-  
- deviceManagement() {
-      // 从本地存储中获取用户信息和设备信息
-      const userInfo = uni.getStorageSync('userInfo');
-      const deviceInfo = userInfo.devices;
-
-      // 判断是否存在设备信息
-      if (!deviceInfo || Object.keys(deviceInfo).length === 0) {
-        uni.showModal({
-          title: '设备信息',
-          content: '当前没有连接的设备',
-          showCancel: false,
-          confirmText: '确定'
-        });
-        return;
-      }
-
-      // 定义需要展示的字段与对应的中文名称
-      const fieldsMapping = {
-        deviceName: '设备名称',
-        deviceMac: '设备MAC',
-        knee: '膝盖角度',
-        temperature: '温度',
-        walk: '步行状态',
-        speed: '速度',
-        distance: '距离',
-        remark: '备注',
-        updateTime: '更新时间'
-      };
-
-      // 构建弹窗展示内容，格式化更新时间
-      let content = '';
-      for (const key in fieldsMapping) {
-        if (key === 'updateTime' && deviceInfo[key]) {
-          content += `${fieldsMapping[key]}：${formatDate(deviceInfo[key])}\n`;
-        } else if (key !== 'updateTime' && deviceInfo.hasOwnProperty(key)) {
-          content += `${fieldsMapping[key]}：${deviceInfo[key] != null ? deviceInfo[key] : ''}\n`;
-        }
-      }
-
-      uni.showModal({
-        title: '设备信息',
-        content: content,
-        cancelText: '取消',
-        confirmText: '删除',
-        success: (res) => {
-          if (res.confirm) {
-            // 用户点击删除后，再次确认删除
-            uni.showModal({
-              title: '确认删除',
-              content: '是否确认删除设备信息？',
-              cancelText: '取消',
-              confirmText: '确定',
-              success: (resDel) => {
-                if (resDel.confirm) {
-                  // 调用 API 删除后端设备数据
-                  deleteHealthData(deviceInfo.userId)
-                    .then((resApi) => {
-                      // 假设后端返回的 code === 200 表示删除成功
-                      if (resApi && resApi.code === 200) {
-                        // 删除成功后，同时清除本地存储中的设备信息
-                        delete userInfo.devices;
-                        uni.setStorageSync('userInfo', userInfo);
-                        uni.showToast({
-                          title: '设备信息已删除',
-                          icon: 'success'
-                        });
-                      } else {
-                        uni.showToast({
-                          title: resApi.msg || '删除失败',
-                          icon: 'none'
-                        });
-                      }
-                    })
-                    .catch((err) => {
-						  console.error('删除请求出错：', err);
-                      uni.showToast({
-                        title: '请求失败',
-                        icon: 'none'
-                      });
-                    });
-                }
-              }
-            });
-          }
-        }
-      });
+//设备管理
+ deviceManagementButton() {
+     deviceManagement();
     },
-    closeUserModal() {
-      this.showUserModal = false;
-    },
+
       clickBannerItem(item) {
         console.info(item)
       },
       changeSwiper(e) {
         this.current = e.detail.current
       },
-      changeGrid(e) {
-        this.$modal.showToast('模块建设中~')
-      }
+
     }
   }
 </script>
@@ -430,15 +362,31 @@ predictRecovery() {
   border-radius: 4px;
 }
 .cancel-btn {
-  background-color: #ccc;
-  color: #fff;
+  background-color: #ccc; /* 灰色背景 */
+  color: #fff; /* 白色文字 */
+  border: none; /* 移除边框 */
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
 }
 .confirm-btn {
-  background-color: #409EFF;
-  color: #fff;
+  background-color: #1989fa; /* 蓝色确认按钮 */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 15px;
 }
 .modal-footer button + button {
   margin-left: 10px;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end; /* 按钮右对齐 */
+  padding: 15px 20px;
+  border-top: 1px solid #f5f5f5;
+  gap: 10px; /* 按钮间距 */
 }
   .text {
     text-align: center;

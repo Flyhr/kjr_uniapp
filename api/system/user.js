@@ -39,3 +39,18 @@ export function uploadAvatar(data) {
     filePath: data.filePath
   })
 }
+export function getUser() {
+    return request({
+        url: '/user',
+        method: 'get',
+    })
+}
+
+
+export function getUserByUserName(data) {
+    return request({
+        url: '/user/getUserByUserName',
+        method: 'get',
+        params:data,
+    })
+}

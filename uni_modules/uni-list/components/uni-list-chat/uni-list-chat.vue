@@ -25,9 +25,12 @@
 				<!-- #ifndef APP -->
 				</view>
 				<!-- #endif -->
-				<view v-if="badgeText && badgePositon === 'left'" class="uni-list-chat__badge uni-list-chat__badge-pos" :class="[isSingle]">
+				<!-- <view v-if="badgeText && badgePositon === 'right'" class="uni-list-chat__badge uni-list-chat__badge-pos" :class="[isSingle]">
 					<text class="uni-list-chat__badge-text">{{ badgeText === 'dot' ? '' : badgeText }}</text>
-				</view>
+				</view> -->
+				 <view v-if="badgeText && badgePositon === 'right'" class="uni-list-chat__badge" :class="[isSingle, badgePositon === 'right' ? 'uni-list-chat--right' : '']">
+				        <text class="uni-list-chat__badge-text">{{ badgeText === 'dot' ? '' : badgeText }}</text>
+				    </view>
 				<view class="uni-list-chat__content">
 					<view class="uni-list-chat__content-main">
 						<text class="uni-list-chat__content-title uni-ellipsis">{{ title }}</text>
@@ -127,7 +130,11 @@
 				default () {
 					return [];
 				}
-			}
+			},
+			unreadCount: {
+			            type: Number,
+			            default: 0
+			        }
 		},
 		// inject: ['list'],
 		computed: {
@@ -157,7 +164,10 @@
 					this.imageWidth = avatarWidth;
 					return 'avatarItem--1';
 				}
-			}
+			},
+		    badgeText() {
+		            return this.unreadCount > 0 ? this.unreadCount : '';
+		        }	
 		},
 		watch: {
 			avatar:{

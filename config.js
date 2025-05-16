@@ -1,9 +1,9 @@
 // 应用全局配置
 module.exports = {
 	// baseUrl: 'http://localhost:7777',
- //baseUrl: 'http://47.97.76.102:7777',
+ baseUrl: 'http://47.97.76.102:7777',
 	// baseUrl: 'http://192.168.1.8:7777',
-	baseUrl: 'http://192.168.43.40:7777',
+	// baseUrl: 'http://192.168.43.40:7777',
 	// baseUrl: 'http://192.168.137.1:7777',
 	// baseUrl: 'http:/172.33.145.81:7777',
 

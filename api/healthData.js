@@ -11,6 +11,48 @@ export function getLatestHealthData(user_id) {
   });
   
 }
+//医生：根据姓名和手机号查询患者是否有账号
+export function selectPat(Name, Phone) {
+  return request({
+    url: '/api/healthData/selectPat',
+    method: 'GET',
+    params: {   
+		  name: Name,
+		  phone: Phone	
+    }
+  });
+}
+
+//添加自己的患者
+export function addPatientRelationleApi(data) {
+    return request({
+        url: '/api/healthData/addPatientRelationle',
+        method: 'POST',
+         data: data
+    });
+}
+//患者获取自己医生信息
+export function getDoctorData(user_id) {
+  return request({
+    url: '/api/healthData/getDoctorInfo',
+    method: 'GET',
+    params: {
+      user_id
+    }
+  });
+  
+}
+//医生获取自己患者信息
+export function getPatientData(user_id) {
+  return request({
+    url: '/api/healthData/getPatientInfo',
+    method: 'GET',
+    params: {
+      user_id
+    }
+  });
+  
+}
 //保存设备数到数据库中
 export function saveHealthData(data) {
     return request({
@@ -19,6 +61,7 @@ export function saveHealthData(data) {
         data: data
     });
 }
+
 /**
  * 删除数据库中设备数据的 API 调用
  * @param {number} userId - 用户ID，用于删除设备数据

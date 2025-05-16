@@ -50,7 +50,7 @@
         register: false,
         globalConfig: getApp().globalData.config,
         loginForm: {
-          username: "qwer",
+          username: "张三",
           password: "123456",
           code: "",
           uuid: ""
